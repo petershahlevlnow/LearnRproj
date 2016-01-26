@@ -3,7 +3,7 @@ theURL
 tomato <- read.table(file = theURL, header = TRUE, sep = ",")
 head(tomato)
 db <- odbcConnect("QV Training")
-customerTable <- sqlQuery(db, "SELECT * FROM bank.customer", stringsAsFactors = FALSE)
+customerTable <- sqlQuery(db, "SELECT * FROM customer", stringsAsFactors = FALSE)
 head(customerTable)
 nameTable <- sqlQuery(db, "SELECT fname, lname 
                             FROM bank.customer 
@@ -25,3 +25,8 @@ w
 save(n,r,w,file = "data/multiple.rdata")
 rm(r,n,w)
 load("data/multiple.rdata")
+
+require(XML)
+theURL_2 <- "http://www.jaredlander.com/2012/02/another-kind-of-super-bowl-pool"
+bowlpool <- readHTMLTable(theURL_2,which = 1, header = FALSE, stringsAsFactors = FALSE)
+bowlpool
