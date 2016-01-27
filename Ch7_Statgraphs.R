@@ -1,0 +1,8 @@
+require(ggplot2)
+data("diamonds")
+head(diamonds)
+hist(diamonds$carat, main = "Carat_histogram", xlab = "Carat")
+plot(price ~ carat, data = diamonds)
+boxplot(diamonds$carat)
+ggplot(data = diamonds) + geom_histogram(aes(x = carat))
+ggplot(data = diamonds) + geom_density(aes(x = carat), fill = "grey50")
