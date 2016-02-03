@@ -20,4 +20,4 @@ double.num <- function(x)
   return (x * 2)
 }
 
-double.num(2)
+double.num(3)
