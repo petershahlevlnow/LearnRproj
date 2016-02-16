@@ -21,3 +21,15 @@ double.num <- function(x)
 }
 
 double.num(2)
+
+do.call("hello.person", args = list(fname = "jared", lname = "lander"))
+
+do.call(hello.person, args = list(fname = "jared", lname = "lander"))
+
+run.this <-function(x, func = mean)
+{do.call(func, args = list(x))}
+
+run.this(1:10)
+run.this(1:10, mean)
+run.this(1:10, sum)
+run.this(1:10, sd)
