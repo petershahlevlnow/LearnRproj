@@ -136,3 +136,17 @@ theDT[ , list(B)]
 theDT[, "B", with = FALSE]
 theDT[, c("A","B"), with = FALSE]
 
+# Keys
+tables()
+# set key provides additional speed
+setkey(theDT, D)
+theDT
+key(theDT)
+
+theDT["One",]
+theDT[c("One", "Two"),] # return >1 column with key
+
+setkey(diamondsDT, cut, color) #set more than one key cut and color
+diamondsDT[J("Ideal","E")] #return rows with both keys
+diamondsDT[J("Ideal",c("E","D"))] # return rows with both keys and vector of colors
+
