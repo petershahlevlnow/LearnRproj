@@ -102,3 +102,37 @@ aggregate(price ~ cut, diamonds, each(mean, median), na.rm = TRUE)
 system.time(dlply(baseball, "id", nrow))
 iBaseball <- idata.frame(baseball)
 system.time(dlply(iBaseball, "id", nrow))
+
+# data.table - faster data processing due to DB style indexing
+require(data.table)
+theDF <- data.frame(A = 1:10,
+                    B = letters[1:10],
+                    C = LETTERS[11:20],
+                    D = rep(c("One", "Two", "Three"), length.out = 10))
+
+theDT <- data.table(A = 1:10,
+                    B = letters[1:10],
+                    C = LETTERS[11:20],
+                    D = rep(c("One", "Two", "Three"), length.out = 10))   
+
+#difference between DT and DF - DF turns characters into factors, where DT does not
+class(theDF$B)
+class(theDT$B )
+
+# turn a DF into a DT
+diamondsDT <- data.table(diamonds)
+diamondsDT
+
+theDT[1:2, ]
+theDT[theDT$A >= 7, ] #not an ideal way to do this
+
+#with DTs columns should be specified as a list (note DFs are with character labels ex: "B"),
+#see difference in 2nd and 3rd cmd below
+theDT[ , list(A, C)]
+theDT[ , B]
+theDT[ , list(B)]
+
+#if passing an argument to a function that requires character arguments use with = FALSE
+theDT[, "B", with = FALSE]
+theDT[, c("A","B"), with = FALSE]
+
