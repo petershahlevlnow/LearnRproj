@@ -150,3 +150,17 @@ setkey(diamondsDT, cut, color) #set more than one key cut and color
 diamondsDT[J("Ideal","E")] #return rows with both keys
 diamondsDT[J("Ideal",c("E","D"))] # return rows with both keys and vector of colors
 
+#Data table aggregation
+#results identical, DTs have built in aggregation functionality 
+aggregate(price ~ cut, diamonds, mean, na.rm = TRUE)
+diamondsDT[, list(price = mean(price)), by = cut]
+
+#aggregate multiple columns/groups through a list
+diamondsDT[, list(price = mean(price)), by = list(cut, color)]
+
+#multiple aggregation variables
+diamondsDT[, list(price = mean(price), carat = mean(carat)), by = cut]
+diamondsDT[, list(price = mean(price), carat = mean(carat), caratSum = sum(carat)), by = cut]
+#multiple variables and groupos
+diamondsDT[, list(price = mean(price), carat = mean(carat), caratSum = sum(carat)), 
+           by = list(cut, color)]
