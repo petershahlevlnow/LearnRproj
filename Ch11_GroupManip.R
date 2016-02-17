@@ -17,3 +17,10 @@ apply(theMatrix, 1, sum, na.rm = TRUE)
 
 rowSums(theMatrix, na.rm = TRUE)
 colSums(theMatrix, na.rm = TRUE)
+
+# lapply and sapply
+
+thelist <- list(A = matrix(1:9, nrow = 3), 
+                B = 1:5, C = matrix(1:4, nrow = 2), D = 2)
+
+lapply(thelist, sum)
