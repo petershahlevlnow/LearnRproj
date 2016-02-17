@@ -41,3 +41,13 @@ simplefunc <- function(x, y)
 
 mapply(simplefunc, firstList, secondList)
 
+#aggregate function
+
+require(ggplot2)
+data(diamonds)
+head(diamonds)
+
+aggregate(price ~ cut, diamonds, mean, na.rm = TRUE)
+aggregate(price ~ cut + color, diamonds, mean, na.rm = TRUE)
+aggregate(cbind(price, carat) ~ cut, diamonds, mean, na.rm = TRUE)
+aggregate(cbind(price, carat) ~ cut + color, diamonds, mean, na.rm = TRUE)
