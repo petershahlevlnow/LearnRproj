@@ -92,3 +92,13 @@ identical(lapply(thelist, sum), llply(thelist, sum))
 #laply - similar to sapply except no vector names
 laply(thelist, sum)
 sapply(thelist, sum)
+
+#plyr helper functions
+# each - for multiple functions
+
+aggregate(price ~ cut, diamonds, each(mean, median), na.rm = TRUE)
+
+# idataframe - creates a referece to existing df for faster processing
+system.time(dlply(baseball, "id", nrow))
+iBaseball <- idata.frame(baseball)
+system.time(dlply(iBaseball, "id", nrow))
