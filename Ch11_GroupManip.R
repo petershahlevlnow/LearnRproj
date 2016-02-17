@@ -85,3 +85,10 @@ careerOBP <- ddply(baseball, .variables = "id", .fun = odp)
 careerOBP <- careerOBP[order(careerOBP$OBP, decreasing = TRUE), ]
 head(careerOBP, 20)
 
+#llply - identical results as llapply
+llply(thelist, sum)
+identical(lapply(thelist, sum), llply(thelist, sum))
+
+#laply - similar to sapply except no vector names
+laply(thelist, sum)
+sapply(thelist, sum)
