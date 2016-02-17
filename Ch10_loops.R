@@ -29,3 +29,23 @@ while (x <= 5)
   x <- x + 1 
   
 }
+
+#Controlling loops with next and break
+
+for (i in 1:10)
+{
+  if (i == 3)
+  {
+    next
+  }
+  print(i)
+}
+
+for (i in 1:10)
+{
+  if (i == 3)
+  {
+    break
+  }
+  print(i)
+}
