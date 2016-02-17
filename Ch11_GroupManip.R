@@ -51,3 +51,37 @@ aggregate(price ~ cut, diamonds, mean, na.rm = TRUE)
 aggregate(price ~ cut + color, diamonds, mean, na.rm = TRUE)
 aggregate(cbind(price, carat) ~ cut, diamonds, mean, na.rm = TRUE)
 aggregate(cbind(price, carat) ~ cut + color, diamonds, mean, na.rm = TRUE)
+
+# plyr functions input one type, ouput antother type
+# ddplyr
+
+require(plyr)
+data("baseball")
+head(baseball)
+
+#change sacrafice flies before 1954 from NA to 0
+baseball$sf[baseball$year < 1954] <- 0
+# check 
+any(is.na(baseball$sf))
+#keep only players with >= 50 at bats
+baseball <- baseball[baseball$ab >= 50, ]
+#check
+any(baseball$ab < 50)
+
+#calculate on base % (OBP) with vecotorization just for each season
+baseball$OBP <- with(baseball, (h + bb + hbp)/(ab + bb + hbp + sf))
+tail(baseball)
+
+#calculate on base % per player's career
+
+odp <- function(data)
+{
+  c(OBP = with(data, sum(h + bb + hbp)/sum(ab + bb + hbp + sf)))
+  
+}
+
+#use ddplyr here to calculate career OBP and then sort and view top 20 players
+careerOBP <- ddply(baseball, .variables = "id", .fun = odp)
+careerOBP <- careerOBP[order(careerOBP$OBP, decreasing = TRUE), ]
+head(careerOBP, 20)
+
