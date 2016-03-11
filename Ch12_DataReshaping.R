@@ -96,4 +96,38 @@ dt00 <- data.table(Aid_00s, key = c("Country.Name", "Program.Name"))
 dt0090 <- dt90[dt00]
 head(dt0090)
 
+#12.3 reshape2
+# common munging -> 1. melting = going from col to row orien 2. casting = going from row to col orien
+
+#12.3.1 melt
+
+head(Aid_00s)
+# we want to achieve rows that represent a single country-program-year entry
+require(reshape2)
+melt00 <- melt(Aid_00s, id_vars = c("Country.Name", "Program.Name"), variable.name ="Year", 
+               value.name = "Dollars")
+tail(melt00,10)
+require(scales)
+
+#create a plot that shows individual program expenses over time
+#Steps:
+#1. Strip out the "FY" out of year and convert to number
+melt00$Year <- as.numeric(str_sub(melt00$Year, start = 3, end = 6))
+
+#2 aggregate data so we have yearly numbers by program
+meltAgg <- aggregate(Dollars ~ Program.Name + Year, data = melt00, sum, na.rm = TRUE)
+
+#3 remove the characters past index 10 in program names to fit plots
+meltAgg$Program.Name <- str_sub(meltAgg$Program.Name, start = 1, end = 10)
+
+#4 plot by dollars spent by year for each program
+ggplot(meltAgg, aes(x = Year, y = Dollars)) + 
+       geom_line(aes(group = Program.Name)) + 
+       facet_wrap(~ Program.Name) +
+       scale_x_continuous(breaks = seq(from = 2000, to = 2009, by = 2)) +
+       theme(axis.text.x = element_text(angle = 90)) +
+       scale_y_continuous(labels = multiple_format(extra = dollar, multiple = "B"))
+
+
+
 
