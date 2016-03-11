@@ -76,7 +76,7 @@ head(frameList[["Aid_60s"]])
 # 5. Now all data.frames are in list you can iterate through the list to join together, 
 #    however using the Reduce function is much faster. Reduce passes an object(list vector) into a specified function
 #    then successively combine the elements of the given object. ex. vector of 1:10 reduce(sum, vec) 1 and 2 are added
-#    then 3 is added then 4 so on until result is 55.
+#    then 3 is added to the result of 1 and 2, then 4 so on until result is 55.
 allAids <- Reduce(function(...){ join(..., by = c("Country.Name", "Program.Name")) },
                   frameList)
 # 6 check dimension
@@ -85,3 +85,15 @@ dim(allAids)
 require(useful)
 corner(allAids, c = 15)
 bottomleft(allAids, c = 15)
+
+
+# 12.2.3 data.table merge
+# join Aids 00s and 90s as dts
+require(data.table)
+dt90 <- data.table(Aid_90s, key = c("Country.Name", "Program.Name"))
+dt00 <- data.table(Aid_00s, key = c("Country.Name", "Program.Name"))
+# join where dt90 is left and dt00 is right and left join is performed
+dt0090 <- dt90[dt00]
+head(dt0090)
+
+
