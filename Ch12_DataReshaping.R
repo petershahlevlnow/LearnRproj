@@ -129,5 +129,10 @@ ggplot(meltAgg, aes(x = Year, y = Dollars)) +
        scale_y_continuous(labels = multiple_format(extra = dollar, multiple = "B"))
 
 
+#12.3.2 dcast - get data into cross table/wide format
+# dcast arguments - 1, data source 2. formula where left side is columns that stay columns right side
+# specifys columns that should become row names 3. values that populate the new columns from right side 
 
+cast00 <- dcast(melt00, Country.Name + Program.Name ~ Year, value.var = "Dollars")
+head(cast00)
 
