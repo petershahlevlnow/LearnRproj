@@ -14,4 +14,5 @@ vectorOftext <- c("hello", "everyone", "out there", ".")
 paste(vectorOftext, collapse = " ")
 paste(vectorOftext, collapse = "*")
 
+#13.2 sprintf
 
