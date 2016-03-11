@@ -34,3 +34,11 @@ for(a in theFiles)
   #assign to the workspace
   assign(x = nameToUse, value = temp)
 }
+
+# 12.2.1 merge
+# merge Aid90s and Aid00s
+Aid90s00s <- merge(x = Aid_90s, y = Aid_00s, by.x = c("Country.Name", "Program.Name"),
+                   by.y = c("Country.Name", "Program.Name"))
+head(Aid90s00s)
+
+#
