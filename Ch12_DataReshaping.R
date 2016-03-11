@@ -19,3 +19,18 @@ cbind(Sport = sport, Association = leauge, Prize = trophy)
 download.file(url = "http://jaredlander.com/data/US_Foreign_Aid.zip", 
               destfile = "data/ForeignAid.zip")
 unzip("data/ForeignAid.zip", exdir = "data")
+
+# load the files programattically with a for loop
+require(stringr)
+theFiles <- dir("data/", pattern  = "\\.csv")
+for(a in theFiles)
+{
+  #build a good name to assign to the data, in this case "Aid_XXs" thus char 12 - 18 of file name
+  nameToUse <- str_sub(string = a, start = 12, end = 18)
+  #read in the csv using read.table, 
+  #file path is a convienent way to specifya folder and file name
+  temp <- read.table(file = file.path("data", a), header = TRUE, sep = ",", 
+                     stringsAsFactors = FALSE)
+  #assign to the workspace
+  assign(x = nameToUse, value = temp)
+}
