@@ -108,3 +108,9 @@ head(str_replace(string =  theStart,pattern = "\\d", replacement = "x"), 30)
 head(str_replace_all(string = theStart, pattern = "\\d", replacement = "x"), 30)
 #replace any string of digits of length of 1 to 4 with x
 head(str_replace_all(string = theStart, pattern = "\\d{1,4}", replacement = "x"), 30)
+
+#search through html tags for text
+#create a vector of HTML 
+commands <- c("<a href = index.html>The link is here</a>", "<b>this is bold text</b>")
+#get the text between html tags
+str_replace(string = commands, pattern = "<.+?>(.+?)<.+>", replacement = "\\1")
