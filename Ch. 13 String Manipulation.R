@@ -97,3 +97,7 @@ head(str_extract(string = theStart, "[0-9][0-9][0-9][0-9]"), 20)
 head(str_extract(string = theStart, "[0-9]{4}"), 20) #{4} number of occurences of 0-9
 head(str_extract(string = theStart, "\\d{4}"), 20) #use \\d for digit
 str_extract(string= theStart, "\\d{1,3}") #find any digit that occurs 1, 2, or 3 times
+
+head(str_extract(string= theStart, pattern = "^\\d{4}"), 30) # '^' denotes to extract from the beginning of text
+head(str_extract(string= theStart, pattern = "\\d{4}$"), 30) # 'S' denotes to extract from the end of text
+head(str_extract(string= theStart, pattern = "^\\d{4}$"), 30)
