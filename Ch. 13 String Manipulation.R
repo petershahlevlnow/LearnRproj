@@ -64,5 +64,36 @@ presidents1[str_sub(string = presidents1$Start, start = 4, end = 4) == 1,
 JohnPos <- str_detect(string = presidents1$PRESIDENT, pattern = "John")
 presidents1[JohnPos, c("YEAR", "PRESIDENT", "Start", "Stop")]
 
+badsearch <- str_detect(presidents1$PRESIDENT, "john")
+goodsearch <- str_detect(presidents1$PRESIDENT, ignore.case("JOHn"))
+sum(badsearch)
+sum(goodsearch)
 
+#load war times from url
+con <- url("http://www.jaredlander.com/data/warTimes.rdata")
+load(con)
+close(con)
+head(warTimes, 10)
 
+#create a column for the start of the war
+warTimes[str_detect(string = warTimes, pattern = "-")]
+theTimes <- str_split(string = warTimes, pattern = "(ACAEA)|-", n=2)
+head(theTimes)
+#check for hyphened seperator
+which(str_detect(string = warTimes, pattern = "-"))
+theTimes[[147]]
+theTimes[[150]]
+#extract the start date only
+theStart <- sapply(theTimes, FUN = function(x) x[1])
+head(theStart)
+#trim white space
+theStart <- str_trim(theStart)
+#pull out january anywhere it's found otherwise NA
+str_extract(string = theStart, pattern = "January")
+#pull just where january is found
+theStart[str_detect(string = theStart, pattern = "January")]
+#search for dates with years by 4 consecutive numbers
+head(str_extract(string = theStart, "[0-9][0-9][0-9][0-9]"), 20)
+head(str_extract(string = theStart, "[0-9]{4}"), 20) #{4} number of occurences of 0-9
+head(str_extract(string = theStart, "\\d{4}"), 20) #use \\d for digit
+str_extract(string= theStart, "\\d{1,3}") #find any digit that occurs 1, 2, or 3 times
