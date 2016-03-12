@@ -101,3 +101,10 @@ str_extract(string= theStart, "\\d{1,3}") #find any digit that occurs 1, 2, or 3
 head(str_extract(string= theStart, pattern = "^\\d{4}"), 30) # '^' denotes to extract from the beginning of text
 head(str_extract(string= theStart, pattern = "\\d{4}$"), 30) # 'S' denotes to extract from the end of text
 head(str_extract(string= theStart, pattern = "^\\d{4}$"), 30)
+
+#str_replace, replace first digit with x
+head(str_replace(string =  theStart,pattern = "\\d", replacement = "x"), 30)
+#str_replace_all, replace all digits with x
+head(str_replace_all(string = theStart, pattern = "\\d", replacement = "x"), 30)
+#replace any string of digits of length of 1 to 4 with x
+head(str_replace_all(string = theStart, pattern = "\\d{1,4}", replacement = "x"), 30)
