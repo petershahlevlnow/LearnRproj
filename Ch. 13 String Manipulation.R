@@ -59,8 +59,10 @@ str_sub(string = presidents1$PRESIDENT, start = 4, end = 8)
 presidents1[str_sub(string = presidents1$Start, start = 4, end = 4) == 1, 
             c("YEAR", "PRESIDENT", "Start", "Stop")]
 
-
-
+#13.4 Regular Expressions
+# find a president with the name "John", use str_detect
+JohnPos <- str_detect(string = presidents1$PRESIDENT, pattern = "John")
+presidents1[JohnPos, c("YEAR", "PRESIDENT", "Start", "Stop")]
 
 
 
