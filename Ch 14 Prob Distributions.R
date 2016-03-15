@@ -48,3 +48,15 @@ neg1to1 <- data.frame(x = neg1pos1, y = dnorm(neg1pos1))
 head(neg1to1)
 neg1to1 <- rbind(c(min(neg1to1$x), 0), neg1to1, c(max(neg1to1$x), 0))
 p + geom_polygon(data = neg1to1, aes(x = x, y = y))
+
+#cumalative plot
+randProb <- pnorm(randNorm)
+ggplot(data.frame(x = randNorm, y = randProb)) +
+aes(x= x, y = y) +
+geom_point() + labs(x = "Random Normal Variables", y = "probability")
+
+# qnorm - given a cumulative probabilty what is the quantile 
+qnorm(0.5)
+randNorm10
+qnorm(pnorm(randNorm10))
+all.equal(randNorm10, qnorm(pnorm(randNorm10)))
