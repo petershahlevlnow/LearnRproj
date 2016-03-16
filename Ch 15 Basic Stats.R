@@ -131,7 +131,7 @@ ggplot(data.frame(x = randT)) + geom_density(aes(x = x), fill = "grey", color = 
   geom_vline(xintercept = tipTTest$statistic) + geom_vline(xintercept = mean(randT) + c(-2,2)*sd(randT), linetype = 2)
 
 #is the tips mean > $2.50
-t.test(tips$tip, alternative = "greater", mu = 2.5)
+t.test(tips$tip, alternative = "greater", mu = 2.5) # H0 tip mean = 2.50, reject null accept alternative > $2.50
 
 #15.3.2 two-sample t-test
 # see how male and females are tipped
@@ -149,6 +149,7 @@ ansari.test(tip ~ sex, tips)
 # variances are in fact EQAUL, so we can use the standard two sample  t test
 t.test(tip ~ sex, data = tips, var.equal = TRUE) # var.equal is false by default or the Welch test
 # this test indicates that men are tipped roughly equal to females. note p-value > 0.05 not statistiaclly sig
+# fail to reject null H0 where tips for sexes are different
 
 require(plyr)
 #split data according to sex then apply to summarize function.
@@ -160,5 +161,16 @@ ggplot(tipSummary, aes(x = tip.mean, y = sex)) + geom_point() + geom_errorbarh(a
                                                                                    xmax = Upper),
                                                                                height = .2)
 
+#15.3.3 Paired two sample t tests
 
+# when samples are linked, or checking effects before and after treatments use paired t-tests
+require(UsingR)
+head(father.son)
+t.test(father.son$fheight, father.son$sheight, paired = TRUE)
+# this shows that null hypothesis H0 heights are equal should be rejected. Heights are different among this 
+# dataset of fathers and sons
+#plot the test on a density chart
+heightDiff <- father.son$fheight - father.son$sheight
+ggplot(father.son, aes(x = fheight - sheight)) + geom_density() + geom_vline(xintercept = mean(heightDiff)) +
+  geom_vline(xintercept = mean(heightDiff) + 2*c(-1,1)*sd(heightDiff)/sqrt(nrow(father.son)), linetype = 2)
 
