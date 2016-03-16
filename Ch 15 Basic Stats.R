@@ -114,3 +114,51 @@ econCov <- cov(economics$pce, economics$psavert)
 cov(economics[, c(2, 4:6)])
 identical(econCov, cor(economics$pce,economics$psavert) * sd(economics$pce) * sd(economics$psavert))
 
+# 15.3 t-tests
+# camparing mean(s)
+head(tips)
+unique(tips$sex)
+unique(tips$day)
+
+#15.3.1 one-sample t-tests
+t.test(tips$tip, alternative = "two.sided", mu = 2.5) # are average tips equal to $2.50, H0 = tips = $2.50
+                                                      # result says that we can reject the null, tips are not equal to $2.50
+#plot the result
+randT <- rt(30000, df=NROW(tips) - 1) #build a t distribution
+tipTTest <- t.test(tips$tip, alternative = "two.sided", mu = 2.5) #get t test information
+#plot tdistribution with 3 vertical lines - 1 at -2*sd(RandT), 1 at 2*sd(RandT), 1 at t-statistic of tips t test
+ggplot(data.frame(x = randT)) + geom_density(aes(x = x), fill = "grey", color = "grey") +
+  geom_vline(xintercept = tipTTest$statistic) + geom_vline(xintercept = mean(randT) + c(-2,2)*sd(randT), linetype = 2)
+
+#is the tips mean > $2.50
+t.test(tips$tip, alternative = "greater", mu = 2.5)
+
+#15.3.2 two-sample t-test
+# see how male and females are tipped
+# first check for variances. Are they equal or unequal?
+aggregate(tip ~ sex, data = tips, var)
+# next check for normally distributed
+shapiro.test(tips$tip) # all sexes
+shapiro.test(tips$tip[tips$sex == "Female"]) # just females
+shapiro.test(tips$tip[tips$sex == "Male"]) # just Males
+# check normal distributed visually
+ggplot(tips, aes(x = tip, fill = sex)) + geom_histogram(binwidth = .5, alpha = 1/2)
+# all checks show that the show that tips for groups are not normally distributed, so use 
+# Ansari.bradley test to examine variance equality
+ansari.test(tip ~ sex, tips)
+# variances are in fact EQAUL, so we can use the standard two sample  t test
+t.test(tip ~ sex, data = tips, var.equal = TRUE) # var.equal is false by default or the Welch test
+# this test indicates that men are tipped roughly equal to females. note p-value > 0.05 not statistiaclly sig
+
+require(plyr)
+#split data according to sex then apply to summarize function.
+tipSummary <- ddply(tips, "sex", summarize, tip.mean = mean(tip), tip.sd = sd(tip), 
+                      Lower = tip.mean - 2*tip.sd/sqrt(NROW(tip)), Upper = tip.mean + 2*tip.sd/sqrt(NROW(tip)))
+tipSummary
+#visualize tipSummary, confidence ranges overlap suggesting tips are roughly equivalent between sexes
+ggplot(tipSummary, aes(x = tip.mean, y = sex)) + geom_point() + geom_errorbarh(aes(xmin = Lower,
+                                                                                   xmax = Upper),
+                                                                               height = .2)
+
+
+
