@@ -174,3 +174,26 @@ heightDiff <- father.son$fheight - father.son$sheight
 ggplot(father.son, aes(x = fheight - sheight)) + geom_density() + geom_vline(xintercept = mean(heightDiff)) +
   geom_vline(xintercept = mean(heightDiff) + 2*c(-1,1)*sd(heightDiff)/sqrt(nrow(father.son)), linetype = 2)
 
+#15.4 ANOVA - analysis of variance. comparing multiple groups
+# comparing tips by day
+tipAnova <- aov(tip ~ day - 1, tips)
+#why -1?
+tipIntercept <- aov(tip ~ day, tips)
+tipAnova$coefficients
+tipIntercept$coefficients
+#outputs are different leaving -1 out makes subsequent groups tip means based on a line.
+summary(tipAnova) # shows a significant p-value.
+# which groups differed from the others?
+tipsByDay <- ddply(tips, "day", summarize, tip.mean= mean(tip), tip.sd = sd(tip), Length = NROW(tip),
+                   tfrac = qt(p=0.90, df = Length -1), Lower = tip.mean - tfrac*tip.sd/sqrt(Length),
+                   Upper = tip.mean + tfrac*tip.sd/sqrt(Length))
+
+tipsByDay
+ggplot(tipsByDay, aes(x = tip.mean, y = day)) + geom_point() + geom_errorbarh(aes(xmin = Lower,
+                                                                                  xmax = Upper), height = .3)
+
+# Note use NROW to guarantee computation, nrow only works on dataframes and matrices
+nrow(tips)
+NROW(tips)
+nrow(tips$tip)
+NROW(tips$tip)
