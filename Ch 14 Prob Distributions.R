@@ -112,3 +112,29 @@ pbinom(q = 1:10, size = 10, prob = 0.3)
 #qbinom - given probabilty, returns quantile - for this distrubution the number of successes
 qbinom(p = 0.3, size = 10, prob = 0.3)
 qbinom(p = c(0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6), size = 10, prob = 0.3)
+
+#14.3 Poisson Distribution
+# plot poisson distributions with growing lambdas
+pois1 <- rpois(n = 10000, lambda = 1)
+pois2 <- rpois(n = 10000, lambda = 2)
+pois5 <- rpois(n = 10000, lambda = 5)
+pois10 <- rpois(n = 10000, lambda = 10)
+pois20 <- rpois(n = 10000, lambda = 20)
+pois <- data.frame(Lambda.1 = pois1, Lambda.2 = pois2, Lambda.5 = pois5,
+                   Lambda.10 = pois10, Lambda.20 = pois20) 
+
+#melt data to make easier to plot
+require(reshape2)
+pois <- melt(data = pois, variable.name = "Lambda", value.name = "x")
+#clean up column name
+require(stringr)
+pois$Lambda <- as.factor(as.numeric(str_extract(string = pois$Lambda, pattern ="\\d+")))
+head(pois)
+tail(pois)
+#plot histogram with facet wrap
+ggplot(pois, aes(x = x)) + geom_histogram(binwidth = 1) + facet_wrap(~ Lambda) + 
+  ggtitle("Probability Mass Function")
+#plot overlaying desities
+ggplot(pois, aes(x = x)) + geom_density(aes(group = Lambda, color = Lambda, fill = Lambda), 
+                                        adjust = 4, alpha = 1/2) + scale_color_discrete() +
+  scale_fill_discrete() + ggtitle("Probability Mass funtion")
