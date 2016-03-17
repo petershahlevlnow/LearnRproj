@@ -43,39 +43,82 @@ ggplot(tipsCoef, aes(x = Estimate, y = day)) + geom_point() +geom_errorbarh(aes(
                                                                                  xmax = Upper), height = 0.3) +
   ggtitle("tips by day calculated from regression model")
 
+#16.2 multiple regression
+#get housing data
+housing <- read.table("http://www.jaredlander.com/data/housing.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+head(housing)
 
+#rename columns
+names(housing) <- c("Neighborhood", "Class", "Units", "YearBuilt","SqFt", "Income", "IncomePerSqFt", "Expense",
+                    "ExpensePerSqFt", "NetIncome", "Value", "ValuePerSqFt", "Boro")
+head(housing)
+#Exploratory of response variable - ValuePerSqFt through histogram
+ggplot(housing, aes(x = ValuePerSqFt)) + geom_histogram(binwidth = 10) + labs(x = "ValuePerSqFt")
+# there is a bimodal nature to the above plot, facet and color based on boro explore further
+#overlaid
+ggplot(housing, aes(x = ValuePerSqFt, fill = Boro)) + geom_histogram(binwidth = 10) + labs(x = "ValuePerSqFt")
+#faceted
+ggplot(housing, aes(x = ValuePerSqFt, fill = Boro)) + geom_histogram(binwidth = 10) + labs(x = "ValuePerSqFt") +
+  facet_wrap(~Boro)
+#plot histogram of sqft and units, and with a filter on units
+ggplot(housing, aes(x = SqFt)) + geom_histogram()
+ggplot(housing, aes(x = Units)) + geom_histogram()
+ggplot(housing[housing$Units < 1000, ], aes(x = SqFt)) + geom_histogram()
+ggplot(housing[housing$Units < 1000, ], aes(x = Units)) + geom_histogram()
 
+#scatter plot value per sq ft versus sq ft and VPSQFT versus units, apply filter of 1000 units or less
 
+ggplot(housing, aes(x = SqFt, y = ValuePerSqFt)) + geom_point()
+ggplot(housing, aes(x = Units, y = ValuePerSqFt)) + geom_point()
+ggplot(housing[housing$Units < 1000, ], aes(x = SqFt, y = ValuePerSqFt)) + geom_point()
+ggplot(housing[housing$Units < 1000, ], aes(x = Units, y = ValuePerSqFt)) + geom_point()
+# since data in both explorations seem skewed to the right a log transformation may be necessary
+require(gridExtra)
+p1 <- ggplot(housing, aes(x = SqFt, y = ValuePerSqFt)) + geom_point()
+p2 <- ggplot(housing, aes(x = log(SqFt), y = ValuePerSqFt)) + geom_point()
+p3 <- ggplot(housing, aes(x = SqFt, y = log(ValuePerSqFt))) + geom_point()
+p4 <- ggplot(housing, aes(x = log(SqFt), y = log(ValuePerSqFt))) + geom_point()
+grid.arrange(p1, p2, p3, p4, ncol=2)
+# taking log of sqft maybe helpful in modeling
+#try units
+ggplot(housing, aes(x = Units, y = ValuePerSqFt)) + geom_point()
+ggplot(housing, aes(x = log(Units), y = ValuePerSqFt)) + geom_point()
+ggplot(housing, aes(x = Units, y = log(ValuePerSqFt))) + geom_point()
+ggplot(housing, aes(x = log(Units), y = log(ValuePerSqFt))) + geom_point()
 
+#now run a linear model on predictors units, sqft, boro and response value per sqft
+house1 <- lm(ValuePerSqFt ~ Units + SqFt + Boro, data = housing)
+summary(house1)
+coef(house1)
+nrow(housing) - length(coef(house1))
+house1$coefficients
 
+require(coefplot)
+coefplot(house1)
+#interaction terms (units and sqft)
+house2 <- lm(ValuePerSqFt ~ Units * SqFt + Boro, data = housing)
+summary(house2)
+house3 <- lm(ValuePerSqFt ~ Units : SqFt + Boro, data = housing)
+summary(house3)
+grid.arrange(coefplot(house2), coefplot(house3), ncol = 2)
 
+#three way interactions
+house4 <- lm(ValuePerSqFt ~ Units * SqFt * Income, data = housing)
+house4$coefficients
 
+#test interaction ratio
+house6 <- lm(ValuePerSqFt ~ I(SqFt/Units) + Boro, housing)
+house6$coefficients
+#multiplot in coefplot 
+multiplot(house1, house2, house3)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#predict function
+housingNew <- read.table("http://www.jaredlander.com/data/housingNew.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+#make a predition with new data and 95% confidence level, predicting value per sqft 
+#on the new data using old data model from house1
+housePredict <- predict(house1, newdata = housingNew, se.fit = TRUE, interval = "prediction", level = .95)
+head(housePredict$fit)
+housePredict$fit
+head(housePredict$se.fit)
 
 
