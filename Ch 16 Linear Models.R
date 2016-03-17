@@ -121,4 +121,4 @@ head(housePredict$fit)
 housePredict$fit
 head(housePredict$se.fit)
 
-
+#other useful functinos - weights (weight observations), subset (use subset of data)
