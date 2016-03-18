@@ -59,3 +59,41 @@ multiplot(children1, children2)
 
 # Multinomial regression - classifying multiple categories: 1. running multiple logistic regressions. 2. using
 # polr function 3. multinom function from the nnet package
+
+#17.4 Survival Analysis
+require(survival)
+head(bladder)
+bladder[100:105,]
+# now look at the response variable by build.y
+survObject <- with(bladder[100:105, ], Surv(stop, event))
+survObject
+# in matrix form
+survObject[, 1:2]
+# first 4 rows had an event; the last two rows had no event so time is censored with a (+), an event could have 
+# occurred afterward
+# most common way to model survival is using a Cox proportional hazards model - coxph
+cox1 <- coxph(Surv(stop, event) ~ rx + number + size + enum, data = bladder)
+summary(cox1)
+# plot survival curve
+par(mfrow=c(1,1))
+plot(survfit(cox1), xlab = "Days", ylab = "Survival Rate", conf.int = TRUE)
+
+# use strata() to split placebo from treatment, rx in bladder
+cox2 <- coxph(Surv(stop, event) ~ strata(rx) + number + size + enum, data = bladder)
+summary(cox2)
+# plot 
+plot(survfit(cox2), xlab = "Days", ylab = "Survival Rate", conf.int = TRUE, col = 1:2)
+legend("bottomleft", legend=c(1,2), lty = 1, col= 1:2, text.col = 1:2, title = "rx")
+
+# test proportional hazard assumptions
+cox.zph(cox1)
+cox.zph(cox2)
+
+# Andersen - Gill analysis takes intervalized data and can handle multiple events, such as counting 
+# ER visits as opposed to whether or not there is an ER visit
+head(bladder2)
+ag1 <- coxph(Surv(start, stop, event) ~ rx + number + size + enum + cluster(id), data = bladder2)
+ag2 <- coxph(Surv(start, stop, event) ~ strata(rx) + number + size + enum + cluster(id), data = bladder2)
+plot(survfit(ag1), conf.int = TRUE)
+plot(survfit(ag2), conf.int = TRUE, col = 1:2)
+legend("topright", legend=c(1,2), lty = 1, col= 1:2, text.col = 1:2, title = "rx")
