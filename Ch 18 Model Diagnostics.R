@@ -86,3 +86,101 @@ anova(high1, high2, high3, high4, high5)
 AIC(high1, high2, high3, high4, high5)
 BIC(high1, high2, high3, high4, high5)
 
+# 18.3 Cross Validation
+# residual and model tests like ANOVA, AIC, and BIC are a bit old fashioned. the preferred method today is
+# crass validation - hold out. 
+# Data are broken into k non-overlapping sections. then a model is fitted to k-1 sections and tested on the kth 
+# section for prediction. This is repeated k times until all sections have been held out.
+
+# cv.glm from boot is required
+require(boot)
+# can use glm for linear regression as shown below
+houseG1 <- glm(ValuePerSqFt ~ Units + SqFt + Boro, data = housing, family = gaussian(link = "identity"))
+# verify that coefficients are the same
+identical(coef(house1), coef(houseG1))
+# run cross validation with k=5
+houseCV1 <- cv.glm(housing, houseG1, K=5)
+houseCV1$delta
+# two numbers in the delta 1. raw cross validation error based on the cost function (MSE) for all folds 
+# 2. the adjusted cross validation error - compensates for not leaving not leave one out cv - like k cross validation
+# but one section has only one data point
+
+# need to compare the numbers to other models
+houseG2 <- glm(ValuePerSqFt  ~ Units * SqFt + Boro, data = housing)
+houseG3 <- glm(ValuePerSqFt  ~ Units + SqFt * Boro + Class, data = housing)
+houseG4 <- glm(ValuePerSqFt  ~ Units + SqFt * Boro + SqFt * Class, data = housing)
+houseG5 <- glm(ValuePerSqFt  ~ Boro + Class, data = housing)
+
+# cross validation
+houseCV2 <- cv.glm(housing, houseG2, K=5)
+houseCV3 <- cv.glm(housing, houseG3, K=5)
+houseCV4 <- cv.glm(housing, houseG4, K=5)
+houseCV5 <- cv.glm(housing, houseG5, K=5)
+
+# combine all error values
+cvResults <- as.data.frame(rbind(houseCV1$delta, houseCV2$delta, houseCV3$delta, houseCV4$delta, houseCV5$delta))
+names(cvResults) <- c("error", "adjusted error")
+cvResults$Model <- sprintf("houseG%s", 1:5)
+cvResults
+
+#visualize the results
+#Anova
+cvAnova<- anova(houseG1, houseG2, houseG3, houseG4, houseG5)
+cvResults$ANOVA <- cvAnova$`Resid. Dev`
+#measure AIC
+cvResults$AIC <- AIC(houseG1, houseG2, houseG3, houseG4, houseG5)$AIC
+# make a data.frame suitable for pltting
+require(reshape2)
+cvMelt <- melt(cvResults, id.vars = "Model", variable.name = "Measure", value.name = "Value")
+cvMelt
+ggplot(cvMelt, aes(x = Model, y = Value)) + geom_line(aes(group = Measure, color = Measure)) +
+  facet_wrap(~Measure, scales = "free_y") + theme(axis.text.x = element_text(angle = 90, vjust = .5)) +
+  guides(color = FALSE)
+# model 4 is in fact the best of the 5 models.
+
+# General framework for creating your own cross validation for models other than glm
+# this didn't end up working so just moving on.
+cv.work <- function(fun, k=5, data, cost = function(y, yhat) mean((y - yhat)^2), response= "y", ...)
+{
+  #generate folds
+  folds <- data.frame(Fold=sample(rep(x=1:k, length.out = nrow(data))), Row=1:nrow(data))
+  
+  #start error at 0
+  error <- 0
+  
+  ## loop through each of the folds
+  ## for each fold
+  ## fit the model on the training data
+  ## predict the test data
+  ## compute the erro and accumlate it
+  for(f in 1:max(folds$Fold))
+  {
+    #rows that are in the test
+    theRows <- folds$Row(folds$Fold == f)
+    
+    ## call fun on data[-theRows]
+    mod <- fun(data=data[-theRows, ], ...)
+    pred <- predict(mod, data[theRows, ])
+    # add new error weighted by the number of rows in this fold
+    error <- error + cost(data[theRows, response], pred) * (length(theRows)/nrow(data))
+    
+  }
+  return(error)
+}
+
+# now apply this function to various housing models to get cv errors
+cv1 <- cv.work(fun = lm, k = 5, data =housing, response = "ValuePerSqFt", 
+               formula = ValuePerSqFt ~ Units + SqFt + Boro)
+cv2 <- cv.work(fun=lm, k = 5, data =housing, response = "ValuePerSqFt",
+               formula = ValuePerSqFt ~ Units * SqFt + Boro)
+cv3 <- cv.work(fun=lm, k = 5, data =housing, response = "ValuePerSqFt",
+               formula = ValuePerSqFt ~ Units + SqFt * Boro + Class)
+cv4 <- cv.work(fun=lm, k = 5, data =housing, response = "ValuePerSqFt",
+               formula = ValuePerSqFt ~ Units + SqFt * Boro + SqFt*Class)
+cv5 <- cv.work(fun=lm, k = 5, data =housing, response = "ValuePerSqFt",
+               formula = ValuePerSqFt ~ Boro + Class)
+
+cvResults <- data.frame(Model = sprintf("house%s", 1:5), Error = c(cv1, cv2, cv3, cv4, cv5))
+cvResults
+
+
