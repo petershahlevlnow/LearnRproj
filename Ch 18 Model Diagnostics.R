@@ -183,4 +183,45 @@ cv5 <- cv.work(fun=lm, k = 5, data =housing, response = "ValuePerSqFt",
 cvResults <- data.frame(Model = sprintf("house%s", 1:5), Error = c(cv1, cv2, cv3, cv4, cv5))
 cvResults
 
+#18.4 Bootstrapping
+# sometimes there isn't a good analytical solution to a problem. Especially true for measuring uncertainty around
+# confidence intervals
+# statistic is applied to dataset of n rows. then data is sampled to create a data set with n rows but with repeats
+# then the statistic is applied again to that dataset. This process is repeated R times (ex 1200) to create a distribution
+# for the statistic
+# simple example
+require(plyr)
+
+baseball <- baseball[baseball$year >= 1990, ]
+head(baseball)
+# batting avg and sd. SD is difficult to calculate so we use bootstraping
+# batting avg = sum(h)/sum(atbats)
+
+## use boot 
+##build a function for calculating batting average
+# data is the data
+# boot will pass varying sets of indices
+# some rows will be represented multiple times
+# otehr rows will not be represented at all
+# on average about 63% of the rows will be present
+# this function is called repeatedly boot
+bat.avg <- function(data, indices = 1: NROW(data), hits = "h", at.bats = "ab")
+{
+  sum(data[indices, hits], na.rm = TRUE)/sum(data[indices, at.bats], na.rm = TRUE)
+}
+
+# test the func on original data
+bat.avg(baseball)
+# now bootstrap it
+# call it 1200 times
+# pass indices to function
+avgBoot <- boot(data = baseball, statistic = bat.avg, R = 1200, stype = "i")
+avgBoot
+#print the confidence interval
+boot.ci(avgBoot, conf = 0.95, type = "norm")
+# plot the distribution of replicate results
+ggplot() + geom_histogram(aes(x = avgBoot$t), fill = "grey", color = "grey") + 
+  geom_vline(xintercept = avgBoot$t0 + c(-1, 1)*2*sqrt(var(avgBoot$t)), linetype = 2)
+
+
 
