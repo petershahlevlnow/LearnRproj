@@ -223,5 +223,15 @@ boot.ci(avgBoot, conf = 0.95, type = "norm")
 ggplot() + geom_histogram(aes(x = avgBoot$t), fill = "grey", color = "grey") + 
   geom_vline(xintercept = avgBoot$t0 + c(-1, 1)*2*sqrt(var(avgBoot$t)), linetype = 2)
 
+#18.5 Stepwise Variable Selection
+# adding and subtracting variable into a model until an optimal has been found
 
+#define the lowest model
+nullModel <- lm(ValuePerSqFt ~ 1, data = housing)
+# the largest model
+fullModel <- lm(ValuePerSqFt ~ Units + SqFt*Boro + Boro*Class, data = housing)
 
+#try different models using the step function, specify direction to work, in this case both
+houseStep <- step(nullModel, scope = list(lower = nullModel, upper = fullModel), direction = "both")
+# reveal the chosen model
+houseStep
