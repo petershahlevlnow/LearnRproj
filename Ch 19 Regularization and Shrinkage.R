@@ -155,4 +155,44 @@ alphaInfo <- Reduce(rbind, lapply(acsDouble, extractGlmnetInfo))
 alphaInfo2 <- plyr::ldply(acsDouble, extractGlmnetInfo)
 identical(alphaInfo, alphaInfo2)
 
+#make a column listing the alphas
+alphaInfo$Alpha <- alphas
+alphaInfo
+# plot these numbers from alphaInfo
 
+##prepare the data.frame for plotting multiple pieces of information
+require(reshape2)
+require(stringr)
+
+# melt the data into long format
+alphaMelt <- melt(alphaInfo, id.vars = "Alpha", value.name = "Value", variable.name = "Measure")
+# extract 1se or min error types, make new column
+alphaMelt$Type <- str_extract(string = alphaMelt$Measure, pattern = "(min)|(1se)") 
+# some house keeping 
+alphaMelt$Measure <- str_replace(string = alphaMelt$Measure, pattern = "\\.(min|1se)", replacement = "")
+# cast lambda and error into 2 seperate columns
+alphaCast <- dcast(alphaMelt, Alpha + Type ~ Measure, value.var = "Value")
+# plot
+ggplot(alphaCast, aes(x=Alpha, y = error)) + geom_line(aes(group = Type)) + 
+  facet_wrap(~Type, scales = "free_y", ncol = 1) + geom_point(aes(size=lambda))
+
+# optimal alpha is 0.75. it minimizes error on 1se basis
+# refit the model to new alpha
+set.seed(5127151)
+acsCV3 <- cv.glmnet(x = acsX, y = acsY, family = "binomial", nfold = 5,  
+                    alpha = alphaInfo$Alpha[which.min(alphaInfo$error.1se)])
+plot(acsCV3)
+plot(acsCV3$glmnet.fit, xvar = "lambda")
+abline(v = log(c(acsCV3$lambda.min,acsCV3$lambda.1se)), lty = 2)
+
+# create a coefficient plot, glmnet doesn't have coefplots so create one manually
+theCoef <- as.matrix(coef(acsCV3, s = "lambda.1se"))
+coefDF <- data.frame(Value = theCoef, Coefficients = rownames(theCoef))
+coefDF <- coefDF[nonzeroCoef(coef(acsCV3, s = "lambda.1se")),]
+ggplot(coefDF, aes(x = X1, y = reorder(Coefficients, X1))) + 
+  geom_vline(xintercept = 0, color = "grey", linetype =2 ) + 
+  geom_point(color = "blue") + labs(x = "Value", y = "Coefficient", title = "Coefficient Plot")
+
+# num of workers and food stamps are the strongest indicator of income, 
+# NumUnitsMobile home and heating fuel wood are the strongest indicator of having lower income
+  
