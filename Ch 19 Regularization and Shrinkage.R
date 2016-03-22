@@ -93,8 +93,66 @@ require(doParallel)
 set.seed(2834673)
 # create folds, we want observations to be in the same fold each time
 # it is run
-theFolds <- sample(rep(x = 1:5, legth.out = nrow(acsX)))
+theFolds <- sample(rep(x = 1:5, length.out = nrow(acsX)))
 # make a sequence of alpha values. 
 # in general it is better to lean towards lasso rather than ridge so we only consider values of alpha > .5
 alphas <- seq(from = 0.5, to = 1, by = 0.05)
-# before running a parallel
+
+# before running a parallel job a cluster must be started and registered with makeCluster and registerDoParallel.
+# it must be stopped after the job is complete with stopCluster
+# .errorhandling = remove, if error occurs that iteration is skipped
+# .inorder = FALSE, the order of combining the results does not matter
+# .multicombine = TRUE speed up process for combination function, list
+# .packages set to glmnet so it is loaded on each workers
+# .export used to explicitly load into the foreach enviornment
+# %dopar% operator means do foreach loop in parallel
+
+#set seed for random repeatedly
+set.seed(5127151)
+#start a cluster with two workers
+c3 <- makeCluster(2)
+registerDoParallel(c3) # register workers
+before <- Sys.time() # keep track of timing
+#build foreach loop to run in parallel
+acsDouble <- foreach(i = 1:length(alphas), .errorhandling = "remove" , .inorder = FALSE, .multicombine = TRUE,
+                    .export = c("acsX", "acsY", "alphas", "theFolds"), .packages = "glmnet") %dopar%
+{
+  print(alphas[i])
+  cv.glmnet(x = acsX, y = acsY, family = "binomial", nfolds = 5, foldid = theFolds,
+            alpha = alphas[i])
+  #print(alphas[i])
+}
+
+# stop timing
+after <- Sys.time()
+stopCluster(c3) # stop cluster
+# time difference
+after - before
+
+# use sapply to check classes in acsDouble
+sapply(acsDouble, class)
+
+#function for extracting info from cv.glmnet object
+extractGlmnetInfo <- function(object)
+{
+  # find lambdas
+  lambdaMin <- object$lambda.min
+  lambda1se <- object$lambda.1se
+  
+  #figure out wher those lambdas fall in the path
+  whichMin <- which(object$lambda == lambdaMin)
+  which1se <- which(object$lambda == lambda1se)
+  
+  #build one line data.frame with each of the selected lambdas and its corresponding error figures
+  data.frame(lambda.min = lambdaMin, error.min = object$cvm[whichMin], lambda.1se = lambda1se, 
+             error.1se = object$cvm[which1se])
+}
+
+# apply that function to each element of the list
+# combine it all into a data.frame
+alphaInfo <- Reduce(rbind, lapply(acsDouble, extractGlmnetInfo))
+# also could be done with the ldply from plyr
+alphaInfo2 <- plyr::ldply(acsDouble, extractGlmnetInfo)
+identical(alphaInfo, alphaInfo2)
+
+
