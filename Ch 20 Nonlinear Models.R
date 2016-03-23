@@ -22,3 +22,5 @@ summary(wifiMod)
 ggplot(wifi, aes(x=x, y=y, color=Distance)) + geom_point() + 
   scale_color_gradient2(low = "blue", mid = "white", high = "red", midpoint=mean(wifi$Distance)) +
   geom_point(data = as.data.frame(t(coef(wifiMod))), aes(x = betaX, y = betaY), size = 5, color = "green")
+
+# 20.2 Splines 
