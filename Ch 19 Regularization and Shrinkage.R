@@ -195,4 +195,72 @@ ggplot(coefDF, aes(x = X1, y = reorder(Coefficients, X1))) +
 
 # num of workers and food stamps are the strongest indicator of income, 
 # NumUnitsMobile home and heating fuel wood are the strongest indicator of having lower income
+
+#19.2 Bayesian Shrinkage
+# useful when a model buiilt on data that does not have large enough number of rows for some combinations 
+# of the variables
+# download rdata
+download.file(url = "http://www.jaredlander.com/data/ideo.rdata", destfile = "data/ideo.rdata", quiet = TRUE)
+load("data/ideo.rdata")
+head(ideo)
+
+# to show the need for shrinkage we fit a seperate model for each election year the display resulting 
+# coefficients for black level Race
+##fit a bunch of models
+# figure out the years we will be fitting the models on 
+theYears <- unique(ideo$Year)
+
+# create an empty list
+# as many elements as years
+# it holds the results
+# preallocating the object makes the code run faster
+results <- vector(mode = "list", length = length(theYears))
+names(results) <- theYears
+#loop through the years 
+# fit model on subset of that year
+for(i in theYears)
+{
+  results[[as.character(i)]] <- glm(Vote ~ Race + Income + Gender + Education, data = ideo, subset = Year ==i,
+                                    family = binomial(link = "logit"))
+}
+
+# plot coefficients for black level Race. 
+require(coefplot)
+
+voteinfo <- multiplot(results, coefficients = "Raceblack", plot = FALSE)
+head(voteInfo)
+multiplot(results, coefficients = "Raceblack", secret.weapon = TRUE) + coord_flip(xlim = c(-20, 10))
+# notice 1964 has a different error than others, something clearly wrong. to fix put a prior the coeffecient model
+# bayesglm simplest way to add Cauchy prior
+require(arm)
+
+resultsB <- vector(mode = "list", length = length(theYears))
+names(resultsB) <- theYears
+
+for(i in theYears)
+{
+  resultsB[[as.character(i)]] <- bayesglm(Vote ~ Race + Income + Gender + Education, 
+                                          data = ideo[ideo$Year == i,],
+                                          subset = Year ==i, family = binomial(link = "logit"), 
+                                          prior.scale = 2.5, prior.df = 1)
+}
+
+multiplot(resultsB, coefficients = "Raceblack", secret.weapon = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
