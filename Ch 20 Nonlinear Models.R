@@ -84,5 +84,38 @@ g <- ggplot(diamonds, aes(x=carat, y=price)) + geom_point()
 g + stat_smooth(method = "lm", formula = y ~ ns(x, 6), color = "blue") +
   stat_smooth(method = "lm", formula = y ~ ns(x, 3), color = "red")
 
+#20.3 General Additive Models
+# another method for fitting non linear models is GAM which fit seperate smoothing function on each predictor
+# independently
+# uses mcgv similar to glm
+# get data: (note data has no header and formated to save space, a )
+creditNames <- c("Checking", "Duration", "CreditHistory", "Purpose", "CreditAmount", "Savings",
+                 "Employment", "InstallmentRate", "GenderMarital", "OtherDebtors", "YearsAtResidence",
+                 "RealEstate", "Age", "OtherInstallments", "Housing", "ExistingCredits", "Job", "NumLiable",
+                 "Phone", "Foriegn", "Credit")
+theURL <- "http://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data"
+credit <- read.table(theURL, sep = " ", header = FALSE, col.names = creditNames, stringsAsFactors = FALSE)
+head(credit)
 
+# now we need to decode variables only doing it on things we care about. This can be painful
+# before
+head(credit[, c("CreditHistory", "Purpose", "Employment", "Credit")])
+creditHistory <- c(A30 = "All Paid", A31 = "All Paid this Bank", A32 = "Up to Date", A33 = "Late Payment",
+                   A34 = "Critical Amount")
 
+purpose <- c(A40 = "car (new)", A41 = "car (used)", A42 = "furniture/equip", A43 = "radio/TV", 
+             A44 = "domestic appliances", A45 = "repairs", A46 = "education", A47 = "Vacation (doesn't exist",
+             A48 = "retraining", A49 = "Business", A410 = "others")
+
+employment <- c(A71 = "unemployed", A72 = "< l year", A73 = "1 - 4 years", A74 = "4 -7 years",
+                A75 = ">= 7 years")
+
+credit$CreditHistory <- creditHistory[credit$CreditHistory]
+credit$Purpose <- purpose[credit$Purpose]
+credit$Employment <- employment[credit$Employment]
+#coode good/bad credit
+credit$Credit <- ifelse(credit$Credit == 1, "Good", "Bad")
+# make good the base levels
+credit$Credit <- factor(credit$Credit, levels = c("Good", "Bad"))
+# after
+head(credit[, c("CreditHistory", "Purpose", "Employment", "Credit")])
