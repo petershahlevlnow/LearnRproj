@@ -119,3 +119,32 @@ credit$Credit <- ifelse(credit$Credit == 1, "Good", "Bad")
 credit$Credit <- factor(credit$Credit, levels = c("Good", "Bad"))
 # after
 head(credit[, c("CreditHistory", "Purpose", "Employment", "Credit")])
+
+# viewing data in good vs. bad shows non-linear relationship may be appropritate
+
+require(useful)
+ggplot(credit, aes(x = CreditAmount, y = Credit)) + geom_jitter(position = position_jitter(height = .2)) +
+  facet_grid(CreditHistory ~ Employment) + xlab("Credit Amount") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+  scale_x_continuous(labels = multiple)
+
+#color code previous plot by good bad credit and y as age
+ggplot(credit, aes(x = CreditAmount, y = Age)) + geom_point(aes(color=Credit)) +
+  facet_grid(CreditHistory ~ Employment) + xlab("Credit Amount") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) + 
+  scale_x_continuous(labels = multiple)
+
+# using the gam is similar to using lm and glm, in that it takes a formula.
+# differnence is continuous variables such as Credit Amount and Age anc transformed using non-parametric smooting with 
+# spline and tensor product - a way of representing transformation functions of predictors, possibly measured
+# on different units
+require(mgcv)
+# fit a logistic GAM
+# apply tensor product on Credit Amount and spline on age 
+creditGAM <- gam(Credit ~ te(CreditAmount) + s(Age) + CreditHistory + Employment, data = credit, 
+                 family = binomial(link = "logit"))
+summary(creditGAM)
+# the smoother is fitted automatically in the fitting process and can be viewed after the fact.
+# Credit Amount (te) and Age(s). gray shaded regions are the two point standard deviation
+plot(creditGAM, select = 1, se = TRUE, shade = TRUE)
+plot(creditGAM, select = 2, se = TRUE, shade = TRUE)
