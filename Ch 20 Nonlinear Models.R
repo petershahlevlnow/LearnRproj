@@ -148,3 +148,21 @@ summary(creditGAM)
 # Credit Amount (te) and Age(s). gray shaded regions are the two point standard deviation
 plot(creditGAM, select = 1, se = TRUE, shade = TRUE)
 plot(creditGAM, select = 2, se = TRUE, shade = TRUE)
+
+
+# 20.4 Decision Trees
+# a relative modern technique for fitting non-linear models is by decision trees
+# works on both regression and classification by perfoming binary splits on recursive predictors
+require(rpart)
+creditTree <- rpart(Credit ~ CreditAmount + Age + CreditHistory + Employment, data = credit)
+creditTree
+# reading a tree in printed format - each line is a node, first node is the root where 1000 observations are 
+# good and 300 are "Bad". Next node is split on creditHistory. This can be tedious to read so we need to plot
+require(rpart.plot)
+rpart.plot(creditTree, extra = 4)
+# nodes split to the left meet the criteria while those on the right do not. Each node is labled by 
+# the predicted class, either "good" or "bad". The percentage is read from left to right, with the probabilty
+# of being "good" on the left
+
+# while trees are easy to interpret and fit data nicely, they tend to be unstable with high variance due to 
+# overfitting. A slight change in the training data can cause a significant difference in the model.
