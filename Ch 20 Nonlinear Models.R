@@ -166,3 +166,22 @@ rpart.plot(creditTree, extra = 4)
 
 # while trees are easy to interpret and fit data nicely, they tend to be unstable with high variance due to 
 # overfitting. A slight change in the training data can cause a significant difference in the model.
+
+# 20.5 Random Forests
+# An ensemble method of numerous models that are fitted to find the strongest predictors. While this provides
+# great predictors, infernces and explainability are often limited. 
+# Random forests are composed of many decision trees where predictors are randomly chosen. building random trees
+# to make a forest
+
+# use randomForest package
+# need to supply a predictor and response matrix
+require(useful)
+require(randomForest)
+#build the predictor and response matrices
+creditFormula <- Credit ~ CreditHistory + Purpose + Employment + Duration + Age + CreditAmount
+creditX <- build.x(creditFormula, data = credit)
+creditY <- build.y(creditFormula, data = credit)
+# fit the random forest
+creditForest <- randomForest(x = creditX, y = creditY)
+creditForest
+# confusion matrix shows that this is not the best fit and there is room for improvement
