@@ -75,7 +75,7 @@ predict(usBest, n.ahead = 5, se.fit = TRUE)
 theForecast <- forecast(object = usBest, h = 5)
 plot(theForecast)
 
-#20.2 VAR - vector autoregressive
+#21.2 VAR - vector autoregressive
 # dealing with time series that depend on itself and other time series' past and present
 # first convert all the gdp data into a multivariate time series 
 
@@ -121,3 +121,29 @@ coefplot(gdpVAR$varresult$Canada)
 coefplot(gdpVAR$varresult$Japan)
 # predict 5 years ahead
 predict(gdpVAR, n.ahead = 5)
+
+#21.3 GARCH - generalized autoregressive conditional heteroskedasticity
+# ARMA models do not handle extreme events and high volatility well
+# GARCH - models both mean and variance
+require(quantmod)
+att <- getSymbols("T", auto.assign = FALSE)
+# get AT&T data in an XTS object. this has more robust time series handling (handles spaced 
+# events better) and better plotting
+require(xts) 
+head(att)
+plot(att)
+# financial terminal charts
+chartSeries(att)
+addBBands()
+addMACD(32, 50, 12)
+
+attClose <- att$T.Close
+class(attClose)
+head(attClose)
+
+# Garch model in rugarch package - ****rugarch didn't load because ks package wouldn't install 
+require(rugarch)
+attSpec <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
+                      mean.model = list(armaOrder=c(1,1)), distribution.model="std")
+attGarch <- ugarchfit(spec = attSpec, data = attClose)
+attGarch
