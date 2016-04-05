@@ -141,9 +141,53 @@ attClose <- att$T.Close
 class(attClose)
 head(attClose)
 
-# Garch model in rugarch package - ****rugarch didn't load because ks package wouldn't install 
+# Garch model in rugarch package - GARCH(1,1) models, define specification for var and mean model-ARMA, t-dist
 require(rugarch)
 attSpec <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
                       mean.model = list(armaOrder=c(1,1)), distribution.model="std")
 attGarch <- ugarchfit(spec = attSpec, data = attClose)
 attGarch
+
+#attGarch is and S4 object so its slots are accessed by @
+# the slot fit is a list, so its elements are accessed as usual with $
+plot(attGarch@fit$residuals, type = "l")
+plot(attGarch, which=10)
+
+# to judge quality of model, build a few models with different mean specifications all GARCH(1,1) and compare
+# AICs
+# ARMA(1,1)
+attSpec1 <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
+                       mean.model = list(armaOrder=c(1,1)), distribution.model="std")
+# ARMA(0,0)
+attSpec2 <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
+                       mean.model = list(armaOrder=c(0,0)), distribution.model="std")
+# ARMA(0,2)
+attSpec3 <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
+                       mean.model = list(armaOrder=c(0,2)), distribution.model="std")
+# ARMA(1,2)
+attSpec4 <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
+                       mean.model = list(armaOrder=c(1,2)), distribution.model="std")
+
+attGarch1 <- ugarchfit(spec = attSpec1, data = attClose)
+attGarch2 <- ugarchfit(spec = attSpec2, data = attClose)
+attGarch3 <- ugarchfit(spec = attSpec3, data = attClose)
+attGarch4 <- ugarchfit(spec = attSpec4, data = attClose)
+
+infocriteria(attGarch1)
+infocriteria(attGarch2)
+infocriteria(attGarch3)
+infocriteria(attGarch4)
+# predicting with rugarch
+attPred <- ugarchboot(attGarch, n.ahead = 50, method = c("Partial", "Full")[1])
+plot(attPred, which = 2)
+
+# because this is stock data it is worth computing the model on the log returns instead of the actual closing
+# prices
+# diff the logs, drop the first one which is now NA
+attLog <- diff(log(attClose))[-1]
+attLogSpec <- ugarchspec(variance.model = list(model = "sGARCH", garchOrder = c(1,1)), 
+                         mean.model = list(armaOrder=c(1,1)), distribution.model="std")
+attLogGarch <- ugarchfit(spec = attLogSpec, data = attLog)
+infocriteria(attLogGarch)
+# note the AIC drops significantly. it is important to remember that the purpose of the GARCH models is not 
+# to fit the signalbetter but to capture the volatility better.
