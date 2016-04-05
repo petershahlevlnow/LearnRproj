@@ -74,3 +74,50 @@ predict(usBest, n.ahead = 5, se.fit = TRUE)
 # visualize it using forecast function
 theForecast <- forecast(object = usBest, h = 5)
 plot(theForecast)
+
+#20.2 VAR - vector autoregressive
+# dealing with time series that depend on itself and other time series' past and present
+# first convert all the gdp data into a multivariate time series 
+
+# load reshape then cast data into a data.frame
+require(reshape2)
+#cast the data.frame to wide format
+gdpCast <- dcast(Year ~ Country, data = gdp[, c("Country", "Year", "PerCapGDP")], value.var = "PerCapGDP")
+head(gdpCast)
+# convert to timeseries
+gdpTS <- ts(data = gdpCast[, -1], start = min(gdpCast$Year), end = max(gdpCast$Year))
+# build a plot and legend using base graphics
+plot(gdpTS, plot.type = "single", col = 1:8)
+legend("topleft", legend = colnames(gdpTS), ncol = 2, lty = 1, col = 1:8, cex = .9)
+
+# remove germany from the data because of missing data
+gdpTS <- gdpTS[ , which(colnames(gdpTS) != "Germany")]
+
+# common method of fitting a model to multiple time series is with vector Autoregressive - VAR
+# ar function can do this but has issues with singular matrices when the AR order is high, 
+# so use VAR in the vars package.
+
+# need to check if gdpTS needs to be diffed
+numDiffs <- ndiffs(gdpTS)
+numDiffs
+gdpDiffed <- diff(gdpTS, differences = numDiffs)
+plot(gdpDiffed, plot.type = "single", col = 1:7)
+legend("bottomleft", legend = colnames(gdpDiffed), ncol = 2, lty = 1, col = 1:7, cex = .9)
+
+# data is prepped. use VAR - fits a lm of each time series on the lags of itself and other series
+require(vars)
+gdpVAR <- VAR(gdpDiffed, lag.max = 12)
+gdpVAR$p
+names(gdpVAR$varresult) # name of each model
+# each model is actually an LM
+class(gdpVAR$varresult$Canada)
+class(gdpVAR$varresult$Japan)
+# each model has its own coeffecients
+head(coef(gdpVAR$varresult$Canada))
+head(coef(gdpVAR$varresult$Japan))
+
+require(coefplot)
+coefplot(gdpVAR$varresult$Canada)
+coefplot(gdpVAR$varresult$Japan)
+# predict 5 years ahead
+predict(gdpVAR, n.ahead = 5)
