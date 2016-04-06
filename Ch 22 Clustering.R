@@ -61,10 +61,34 @@ ggplot(gapDF, aes(x=1:nrow(gapDF))) + geom_line(aes(y=gap), color = "red") +
 # red = gap statistic (expected - observed) 
 # errorbars are the standard deviation of gap
 
+# 20.2 PAM - Partitioning around mediods 
+# K means can't do categorical data
+# K mediods 
 
+indicators <- c("BX.KLT.DINV.WD.GD.ZS", "NY.GDP.DEFL.KD.ZG", "NY.GDP.MKTP.CD", "NY.GDP.MKTP.KD.ZG",
+                "NY.GDP.PCAP.CD", "NY.GDP.PCAP.KD.ZG", "TG.VAL.TOTL.GD.ZS")
+require(WDI)
+#pull info on these indicators for all countries in our list
+# not all countries have info for every indicator
+# some countries dont have data
+wbInfo <- WDI(country ="all", indicator = indicators, start = 2011, end = 2011, extra = TRUE)
+# get rid of aggregated info
+wbInfo <- wbInfo[wbInfo$region != "Aggregates",]
+# get rid of countries where all indicators are NA
+wbInfo <- wbInfo[which(rowSums(!is.na(wbInfo[,indicators])) > 0), ]
+wbInfo <- wbInfo[!is.na(wbInfo$iso2c),] # remove rows where the iso is missing
 
-
-
-
-
-
+# set rownames so we can know the country without using that for clustering
+rownames(wbInfo) <- wbInfo$iso2c
+# refactor region, income, lending to account for any changes in the levels
+wbInfo$region <- factor(wbInfo$region)
+wbInfo$income <- factor(wbInfo$income)
+wbInfo$lending <- factor(wbInfo$lending)
+# now fit the clustering using PAM
+# find which colums to keep
+# not those in this vector
+keep.cols <- which(!names(wbInfo) %in% c("iso2c", "country", "year", "capital", "iso3c"))
+wbPAM <- pam(x = wbInfo[, keep.cols], k =12, keep.diss = TRUE, keep.data = TRUE)
+# show the medoid observations
+wbPAM$medoids
+plot(wbPAM, which.plots = 2, main = "")
