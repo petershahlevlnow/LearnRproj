@@ -41,4 +41,30 @@ table(wine$Cultivar, wineK3N25$cluster)
 plot(table(wine$Cultivar, wineK3N25$cluster), main = "Confusion Matrix for Wine Clustering", 
      xlab = "Cultivar", ylab = "Cluster")
 
-# an
+# an alternative to Haritgan is Gap Statistic with clusGap - measures the gap between reality and expectation. 
+# it measures the dissimilarity for a clustering data with that of a bootstrapped sample of data. 
+require(cluster)
+theGap <- clusGap(wineTrain, FUNcluster = pam, K.max = 20)
+gapDF <- as.data.frame(theGap$Tab)
+gapDF
+# optimal # of clusters is the smallest number producing a gap within one standard deviation of the number
+# clusters that minimizes the gap
+# logW curves
+ggplot(gapDF, aes(x=1:nrow(gapDF))) + geom_line(aes(y=logW), color = "blue") +
+  geom_point(aes(y=logW), color = "blue") + geom_line(aes(y=E.logW), color = "green") +
+  geom_point(aes(y=E.logW), color = "green")
+# blue = observed within-cluster dissimilarity 
+# green = expected within cluster dissimilarity
+ggplot(gapDF, aes(x=1:nrow(gapDF))) + geom_line(aes(y=gap), color = "red") +
+  geom_point(aes(y=gap), color = "red") + geom_errorbar(aes(ymin=gap-SE.sim, ymax=gap+SE.sim), color = "red") +
+  labs(x = "Number of Clusters", y = "Gap")
+# red = gap statistic (expected - observed) 
+# errorbars are the standard deviation of gap
+
+
+
+
+
+
+
+
