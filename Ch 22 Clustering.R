@@ -92,3 +92,6 @@ wbPAM <- pam(x = wbInfo[, keep.cols], k =12, keep.diss = TRUE, keep.data = TRUE)
 # show the medoid observations
 wbPAM$medoids
 plot(wbPAM, which.plots = 2, main = "")
+# silloutte plot for country clustering. Each line representing an observvation and each grouoping of lines is
+# a cluster. Observations that fit the cluster well have large positive lines and observations that dont 
+# fit well have small or negative lines. a bigger average width for a cluster means a better clustering.
