@@ -122,8 +122,30 @@ world@data$id <- rownames(world@data)
 require(ggplot2)
 require(rgeos)
 world.df <- fortify(world, region = "id")
-# note had to do alot of shit to get rgeos/fortify to work:
-# 1. Download and install GDAL Complete
+head(world.df)
+# note had to do alot of shit to get rgeos/fortify-ggplot2 to work:
+# 1. Download and install GDAL Complete Framework
 # 2. Use Terminal to install rgeos-xxx.tar.gz
 # 3. Install homebrew and install and compile gdal
 # 4. Install rgdal
+
+# before we can join world.df to the clustering, need to join fipscntry back into world.df
+world.df <- join(world.df, world@data[,c("id", "CntryName", "FipsCntry")], by = "id")
+head(world.df)
+# now we can take the steps of joining data from the clustering and the original World bank data
+clusterMembership <- data.frame(FipsCntry = names(wbPAM$clustering), Cluster = wbPAM$clustering,
+                                stringsAsFactors = FALSE)
+head(clusterMembership)
+world.df <- join(world.df, clusterMembership, by = "FipsCntry")
+world.df$Cluster <- as.character(world.df$Cluster)
+world.df$Cluster <- factor(world.df$Cluster, levels = 1:12)
+
+# plot on map
+ggplot() + geom_polygon(data = world.df, aes(x = long, y = lat, group = group, ll = Cluster, color = Cluster)) +
+  labs(x = NULL, y = NULL) + coord_equal() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                                                   axis.text.x = element_blank(), axis.text.y = element_blank(), 
+                                                   axis.ticks = element_blank(), panel.background = element_blank()) 
+# much like k-means the k-medoids clusters must be specified
+# can use something similar to Hartigans
+wbPAM$clusinfo
+  
