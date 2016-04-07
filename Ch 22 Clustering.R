@@ -95,3 +95,35 @@ plot(wbPAM, which.plots = 2, main = "")
 # silloutte plot for country clustering. Each line representing an observvation and each grouoping of lines is
 # a cluster. Observations that fit the cluster well have large positive lines and observations that dont 
 # fit well have small or negative lines. a bigger average width for a cluster means a better clustering.
+
+# view the clustered data on a world map
+# Download and unzip
+download.file(url = "http://www.jaredlander.com/data/worldmap.zip", destfile = "data/worldmap.zip", 
+              method = "curl")
+unzip(zipfile = "data/worldmap.zip", exdir = "data")
+
+# maptools - readshapefiles
+require(maptools)
+world <- readShapeSpatial("data/world_country_admin_boundary_shapefile_with_fips_codes.shp")
+head(world@data)
+
+# fix discrepencies between two digit country codes between data and shape file
+require(plyr)
+world@data$FipsCntry <- as.character(revalue(world@data$FipsCntry, 
+                                             replace = c(AU = "AT", AS="AS", VM = "VN", BM = "MM",
+                                                         SP = "ES", PO = "PT", IC = "IL", SF = "ZA",
+                                                         TU = "TR", IZ = "IQ", UK = "GB", EI = "IE",
+                                                         SU = "SD", MA = "MG", MO = "MA", JA = "JP",
+                                                         SW = "SE", SN = "SG")))
+# convert shape file into a data.frame for ggplot
+# make an id column using rownames
+world@data$id <- rownames(world@data)
+# fortify it, this a special ggplot2 function that converts shapefiles into data.frames
+require(ggplot2)
+require(rgeos)
+world.df <- fortify(world, region = "id")
+# note had to do alot of shit to get rgeos/fortify to work:
+# 1. Download and install GDAL Complete
+# 2. Use Terminal to install rgeos-xxx.tar.gz
+# 3. Install homebrew and install and compile gdal
+# 4. Install rgdal
