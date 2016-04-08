@@ -149,3 +149,43 @@ ggplot() + geom_polygon(data = world.df, aes(x = long, y = lat, group = group, l
 # can use something similar to Hartigans
 wbPAM$clusinfo
   
+#22.3 Hierarchical Clustering
+# no need to specify clusters
+wineH <- hclust(d = dist(wineTrain))
+plot(wineH)
+
+# can also use this on categorical data but dissimilarity matrix needs to be handled differently
+# calculate distance 
+keep.cols <- which(!names(wbInfo) %in% c("iso2c", "country", "year", "capital", "iso3c"))
+wbDaisy <- daisy(x = wbInfo[, keep.cols])
+wbH <- hclust(wbDaisy)
+plot(wbH)
+
+# four different methods for cluster linkage - Average is usually the most appropriate
+wineH1 <- hclust(dist(wineTrain), method = "single")
+wineH2 <- hclust(dist(wineTrain), method = "complete")
+wineH3 <- hclust(dist(wineTrain), method = "average")
+wineH4 <- hclust(dist(wineTrain), method = "centroid")
+
+plot(wineH1, labels = FALSE, main = "Single")
+plot(wineH2, labels = FALSE, main = "Complete")
+plot(wineH3, labels = FALSE, main = "Average")
+plot(wineH1, labels = FALSE, main = "Centroid")
+
+# splitting the hiearchical cluster (split the tree)
+# can do it based on cluster numbers or hieght
+# plot the tree
+plot(wineH)
+#split into 3 and 13 clusters
+rect.hclust(wineH, k = 3, border = "red")
+rect.hclust(wineH, k = 13, border = "blue")
+
+#plot tree
+plot(wineH)
+#split into h = 200 and 800
+rect.hclust(wineH, h = 200, border = "red")
+rect.hclust(wineH, h = 800, border = "blue")
+
+# clustering can sometimes be slow - fastcluster package can be used which has a hclust - 
+# like the hclust but faster
+
